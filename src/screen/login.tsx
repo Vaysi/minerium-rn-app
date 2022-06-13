@@ -32,7 +32,7 @@ const Login = ({navigation}) => {
 
   useEffect(() => {
     if (user && 'loggedIn' in user && user.loggedIn) {
-      navigation.navigate('Home');
+      navigation.navigate('Main');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
@@ -47,7 +47,7 @@ const Login = ({navigation}) => {
       .then(response => {
         setUser({...response.data.user, loggedIn: true});
         setLoading(false);
-        navigation.replace('Home');
+        navigation.navigate('Main');
       })
       .catch(reason => {
         setLoading(false);

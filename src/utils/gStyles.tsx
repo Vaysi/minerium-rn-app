@@ -13,4 +13,9 @@ export default {
     primary: '#043180',
     blue: '#E5ECF6',
   },
+  fonts: {
+    poppins: 'Poppins',
+    mont: 'Montserrat',
+    openSans: 'OpenSans',
+  },
 };

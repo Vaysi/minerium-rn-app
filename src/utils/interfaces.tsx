@@ -25,4 +25,8 @@ export interface MinerStats_Coins {
   algorithm: string;
   price: number;
   network_hashrate: number;
+  difficulty: number;
+  volume: number;
+  reward: number;
+  reward_block: number;
 }

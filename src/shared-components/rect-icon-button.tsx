@@ -7,6 +7,7 @@ interface Props {
   params?: any;
   icon: any;
   text: any;
+  onPress?: any;
 }
 const RectIconButton = (props: Props) => {
   return (
@@ -14,6 +15,7 @@ const RectIconButton = (props: Props) => {
       type="solid"
       {...props.params}
       color={'#043180'}
+      onPress={props.onPress}
       buttonStyle={styles.button}>
       <View style={styles.button}>
         <View style={styles.icon}>{props.icon}</View>

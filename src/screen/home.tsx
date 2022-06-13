@@ -1,5 +1,6 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
+  Dimensions,
   Image,
   SafeAreaView,
   ScrollView,
@@ -12,12 +13,15 @@ import {
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import gStyles from '../utils/gStyles';
 import RectIconButton from '../shared-components/rect-icon-button';
-import {Icon} from '@rneui/base';
+import {Icon, Skeleton} from '@rneui/base';
 import Header from '../shared-components/header';
 import {Row, Table} from 'react-native-table-component';
 import {$$getCoinsData} from '../utils/api';
 import {MinerStats_Coins} from '../utils/interfaces';
 import {addThousandSep, hashToE} from '../utils/functions';
+import CustomDivider from '../shared-components/divider';
+import {userContext} from '../utils/context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const firstCell = (title: string, subtitle: string) => {
   let source = require('../../assets/coins/btc.png');
@@ -48,7 +52,7 @@ const firstCell = (title: string, subtitle: string) => {
   );
 };
 
-const textCell = (title: string, subtitle: string) => (
+const textCell = (title: string, subtitle?: string) => (
   <View style={{display: 'flex', marginLeft: 5}}>
     <Text
       style={{
@@ -59,15 +63,17 @@ const textCell = (title: string, subtitle: string) => (
       }}>
       {title}
     </Text>
-    <Text
-      style={{
-        color: '#000',
-        fontSize: 10,
-        fontWeight: '300',
-        fontFamily: gStyles.body.font,
-      }}>
-      {subtitle}
-    </Text>
+    {subtitle && (
+      <Text
+        style={{
+          color: '#000',
+          fontSize: 10,
+          fontWeight: '300',
+          fontFamily: gStyles.body.font,
+        }}>
+        {subtitle}
+      </Text>
+    )}
   </View>
 );
 
@@ -79,12 +85,14 @@ const iconCell = () => (
     color={gStyles.colors.primary}
   />
 );
-const Home = () => {
+const Home = (props: any) => {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+    backgroundColor: isDarkMode ? Colors.darker : '#F5F5F7',
   };
+
+  const {user, setUser} = useContext(userContext);
 
   const [table, setTable] = useState({
     tableHead: [
@@ -96,14 +104,12 @@ const Home = () => {
       </View>,
       <View style={styles.tableHeader}>
         <View>
-          <Text style={styles.tableHeaderTitle}>Profit</Text>
-          <Text style={styles.tableHeaderSubtitle}>Price</Text>
+          <Text style={styles.tableHeaderTitle}>Price</Text>
         </View>
       </View>,
       <View style={styles.tableHeader}>
         <View>
-          <Text style={styles.tableHeaderTitle}>Pool Hashrate</Text>
-          <Text style={styles.tableHeaderSubtitle}>Network Hashrate</Text>
+          <Text style={styles.tableHeaderTitle}>Network Hashrate</Text>
         </View>
       </View>,
       '',
@@ -113,10 +119,12 @@ const Home = () => {
   const [coins, setCoins] = useState<Array<MinerStats_Coins>>([]);
 
   useEffect(() => {
-    $$getCoinsData().then((response: Array<object>) => {
-      //@ts-ignore
-      setCoins(response.filter(item => item.algorithm === 'SHA-256'));
-    });
+    setTimeout(() => {
+      $$getCoinsData().then((response: Array<object>) => {
+        //@ts-ignore
+        setCoins(response.filter(item => item.algorithm === 'SHA-256'));
+      });
+    }, 2000);
   }, []);
 
   useEffect(() => {
@@ -124,11 +132,8 @@ const Home = () => {
     coins.map(item => {
       rows.push([
         firstCell(item.coin, item.algorithm),
-        textCell('$ 0.3386', addThousandSep(item.price.toFixed(2))),
-        textCell(
-          '166.83 EH/s',
-          `${hashToE(item.network_hashrate).toFixed(2)} EH/s`,
-        ),
+        textCell('$ ' + addThousandSep(item.price.toFixed(2))),
+        textCell(`${hashToE(item.network_hashrate).toFixed(2)} EH/s`),
         iconCell(),
       ]);
     });
@@ -157,28 +162,6 @@ const Home = () => {
           <View style={styles.container}>
             <View style={styles.buttons}>
               <RectIconButton
-                text={'Favorite'}
-                icon={
-                  <Icon
-                    color={'#fff'}
-                    name={'bookmark-outline'}
-                    type={'MaterialIcons'}
-                    size={22}
-                  />
-                }
-              />
-              <RectIconButton
-                text={'Pop Miners'}
-                icon={
-                  <Icon
-                    color={'#fff'}
-                    name={'grid-view'}
-                    type={'MaterialIcons'}
-                    size={22}
-                  />
-                }
-              />
-              <RectIconButton
                 text={'Calculator'}
                 icon={
                   <Icon
@@ -200,32 +183,53 @@ const Home = () => {
                   />
                 }
               />
+              <RectIconButton
+                text={'Logout'}
+                onPress={async () => {
+                  setUser({...user, loggedIn: false});
+                  await AsyncStorage.removeItem('userData');
+                  props.navigation.navigate('Login');
+                }}
+                icon={
+                  <Icon
+                    color={'#fff'}
+                    name={'logout'}
+                    type={'MaterialIcons'}
+                    size={22}
+                  />
+                }
+              />
             </View>
           </View>
-          <View
-            style={{
-              backgroundColor: '#D4E2F4',
-              height: 3,
-              width: '100%',
-              marginVertical: 15,
-            }}
-          />
+          <CustomDivider />
           <View style={styles.tableContainer}>
             <Text style={styles.title}>Statistics</Text>
             <Table>
-              <Row data={table.tableHead} style={styles.head} />
+              <Row
+                data={table.tableHead}
+                style={styles.head}
+                flexArr={[2, 2, 3, 1]}
+              />
               {table.tableData.map((item: any, index: number) => (
                 <Row
                   key={index}
                   data={item}
+                  flexArr={[2, 2, 3, 1]}
                   style={[
                     styles.row,
-                    //@ts-ignore
-                    index % 2 == 0 && {backgroundColor: '#E5ECF6'},
+                    {backgroundColor: index % 2 === 0 ? '#E5ECF6' : null},
                   ]}
-                  textStyle={styles.text}
                 />
               ))}
+              <Skeleton
+                animation="pulse"
+                width={
+                  table.tableData.length < 1
+                    ? Dimensions.get('window').width
+                    : 0
+                }
+                height={table.tableData.length < 1 ? 130 : 0}
+              />
             </Table>
           </View>
         </View>
@@ -264,7 +268,6 @@ const styles = StyleSheet.create({
     height: 50,
     paddingLeft: 10,
   },
-  text: {},
   tableContainer: {
     flex: 1,
     paddingBottom: 16,
