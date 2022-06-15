@@ -12,6 +12,8 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Dashboard from './src/screen/dashboard';
 import {Icon} from '@rneui/base';
 import {StyleSheet} from 'react-native';
+import Splash from './src/screen/splash';
+import Calculator from './src/screen/calculator';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -61,6 +63,22 @@ const HomeTabs = () => (
       name={'Dashboard'}
       component={Dashboard}
     />
+    <Tab.Screen
+      options={{
+        title: 'Calculator',
+        tabBarIcon: ({color, size}) => (
+          <Icon
+            name={'calculate'}
+            type={'MaterialIcons'}
+            size={30}
+            style={styles.tabsIcon}
+            color={'#E5ECF6'}
+          />
+        ),
+      }}
+      name={'Calculator'}
+      component={Calculator}
+    />
   </Tab.Navigator>
 );
 const App = () => {
@@ -94,7 +112,7 @@ const App = () => {
     <userContext.Provider value={{user, setUser}}>
       <SafeAreaProvider>
         <NavigationContainer>
-          <Stack.Navigator initialRouteName={'Login'}>
+          <Stack.Navigator initialRouteName={'Splash'}>
             <Stack.Screen
               options={{headerShown: false}}
               name="Main"
@@ -104,6 +122,11 @@ const App = () => {
               name="Login"
               options={{headerShown: false}}
               component={Login}
+            />
+            <Stack.Screen
+              name="Splash"
+              options={{headerShown: false}}
+              component={Splash}
             />
           </Stack.Navigator>
         </NavigationContainer>

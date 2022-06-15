@@ -74,7 +74,7 @@ const Login = ({navigation}) => {
             <Text style={styles.title}>Login</Text>
             <View style={styles.formContainer}>
               <Input
-                placeholder={'Email'}
+                placeholder={'Email / Username'}
                 leftIcon={
                   <Icon
                     name="alternate-email"
@@ -133,7 +133,8 @@ const styles = StyleSheet.create({
     marginRight: 'auto',
   },
   title: {
-    fontFamily: gStyles.title.boldFont,
+    fontFamily: gStyles.title.font,
+    fontWeight: 'bold',
     display: 'flex',
     flex: 1,
     justifyContent: 'flex-start',

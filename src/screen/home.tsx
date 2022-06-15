@@ -112,19 +112,16 @@ const Home = (props: any) => {
           <Text style={styles.tableHeaderTitle}>Network Hashrate</Text>
         </View>
       </View>,
-      '',
     ],
     tableData: [],
   });
   const [coins, setCoins] = useState<Array<MinerStats_Coins>>([]);
 
   useEffect(() => {
-    setTimeout(() => {
-      $$getCoinsData().then((response: Array<object>) => {
-        //@ts-ignore
-        setCoins(response.filter(item => item.algorithm === 'SHA-256'));
-      });
-    }, 2000);
+    $$getCoinsData().then((response: Array<object>) => {
+      //@ts-ignore
+      setCoins(response.filter(item => item.algorithm === 'SHA-256'));
+    });
   }, []);
 
   useEffect(() => {
@@ -134,7 +131,6 @@ const Home = (props: any) => {
         firstCell(item.coin, item.algorithm),
         textCell('$ ' + addThousandSep(item.price.toFixed(2))),
         textCell(`${hashToE(item.network_hashrate).toFixed(2)} EH/s`),
-        iconCell(),
       ]);
     });
     let newTable = {...table};
@@ -171,17 +167,9 @@ const Home = (props: any) => {
                     size={22}
                   />
                 }
-              />
-              <RectIconButton
-                text={'Watchers'}
-                icon={
-                  <Icon
-                    color={'#fff'}
-                    name={'remove-red-eye'}
-                    type={'MaterialIcons'}
-                    size={22}
-                  />
-                }
+                onPress={async () => {
+                  props.navigation.navigate('Calculator');
+                }}
               />
               <RectIconButton
                 text={'Logout'}
@@ -217,7 +205,8 @@ const Home = (props: any) => {
                   flexArr={[2, 2, 3, 1]}
                   style={[
                     styles.row,
-                    {backgroundColor: index % 2 === 0 ? '#E5ECF6' : null},
+                    // eslint-disable-next-line react-native/no-inline-styles
+                    {backgroundColor: index % 2 === 0 ? '#E5ECF6' : ''},
                   ]}
                 />
               ))}

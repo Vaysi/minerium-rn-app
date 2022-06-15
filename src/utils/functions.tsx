@@ -16,3 +16,7 @@ export function hasJsonStructure(str: any) {
     return false;
   }
 }
+
+export function humanize(x: number, fixed = 8) {
+  return x && x.toFixed(fixed).replace(/\.?0*$/, '');
+}

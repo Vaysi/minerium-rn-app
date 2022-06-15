@@ -6,6 +6,7 @@ import gStyles from '../utils/gStyles';
 interface Props {
   left?: any;
   main?: any;
+  alignCenter?: boolean;
   right?: any;
   user?: boolean;
 }
@@ -29,7 +30,14 @@ const Header = (props: Props) => {
   return (
     <View style={styles.container}>
       <View style={styles.left}>{props.left}</View>
-      <View style={styles.main}>{main}</View>
+      <View
+        style={
+          props.alignCenter
+            ? [styles.main, {alignItems: 'center'}]
+            : styles.main
+        }>
+        {main}
+      </View>
       <View style={styles.right}>{props.right}</View>
     </View>
   );
@@ -43,21 +51,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   left: {
-    paddingLeft: 15,
+    paddingLeft: 10,
     display: 'flex',
     alignItems: 'flex-start',
-    flex: 1,
+    justifyContent: 'center',
+    width: 40,
+    height: 50,
   },
   main: {
     height: 50,
     display: 'flex',
-    flex: 5,
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'flex-start',
   },
   right: {
     paddingRight: 15,
-    flex: 3,
+    maxWidth: 135,
   },
   logo: {
     width: 130,

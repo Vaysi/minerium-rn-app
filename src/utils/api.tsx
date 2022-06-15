@@ -23,6 +23,10 @@ const routes = {
       route: 'users/login',
       method: POST,
     },
+    me: {
+      route: 'users/me',
+      method: GET,
+    },
     register: {
       route: 'users/register',
       method: POST,
@@ -584,6 +588,19 @@ const $$getCoinsData = () => {
     });
 };
 
+const $$me = (token: string) => {
+  return instance
+    .request({
+      method: routes.users.me.method as Method,
+      url: routes.users.me.route,
+      headers: {Authorization: `Bearer ${token}`},
+    })
+    .then(response => response.data)
+    .catch(error => {
+      throw error.response.data;
+    });
+};
+
 export {
   $$userLogin,
   $$userRegister,
@@ -613,4 +630,5 @@ export {
   $$resendVerification,
   $$resetPassword,
   $$getCoinsData,
+  $$me,
 };

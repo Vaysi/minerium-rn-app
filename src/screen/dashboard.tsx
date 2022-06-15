@@ -13,17 +13,15 @@ import {
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {Card} from '@rneui/themed';
 import gStyles from '../utils/gStyles';
-import {Icon, Text} from '@rneui/base';
+import {Icon, Skeleton, Text} from '@rneui/base';
 import SelectDropdown from 'react-native-select-dropdown';
 import Header from '../shared-components/header';
 import {userContext} from '../utils/context';
 import CustomDivider from '../shared-components/divider';
 import {addThousandSep, hashToE, hasJsonStructure} from '../utils/functions';
-import {$$getCoinsData, $$getPps} from '../utils/api';
+import {$$getCoinsData} from '../utils/api';
 import useWebSocket from 'react-native-use-websocket';
 import {MinerStats_Coins} from '../utils/interfaces';
-import {LineChart} from 'react-native-chart-kit';
-import moment from 'moment';
 
 const Dashboard = () => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -45,6 +43,7 @@ const Dashboard = () => {
     <SelectDropdown
       data={coins}
       defaultValue={selectedCoin}
+      defaultValueByIndex={0}
       onSelect={(selectedItem: any) => {
         setSelectedCoin(selectedItem.title.toLowerCase());
       }}
@@ -216,358 +215,319 @@ const Dashboard = () => {
             right={selectButton}
           />
           <View style={styles.container}>
-            <View style={styles.cardsContainer}>
-              <Card containerStyle={styles.card}>
-                <Card.Title style={styles.cardTitle}>Hashrate</Card.Title>
-                <View style={styles.cardContent}>
-                  <View style={styles.dataWrapper}>
-                    <Text style={styles.cardContentTitle}>Real-Time:</Text>
-                    <Text style={styles.cardContentTitle}>Avg 24H:</Text>
-                  </View>
-                  <View style={styles.dataWrapper}>
-                    <Text style={styles.cardContentBody}>
-                      {dashboardData.info.hash5m.toFixed(2)}{' '}
-                      <Text style={styles.unit}>TH/s</Text>
-                    </Text>
-                    <Text style={styles.cardContentBody}>
-                      {dashboardData.info.hash1d.toFixed(2)}{' '}
-                      <Text style={styles.unit}>TH/s</Text>
-                    </Text>
-                  </View>
+            {messageHistory.length > 1 && (
+              <>
+                <View style={styles.cardsContainer}>
+                  <Card containerStyle={styles.card}>
+                    <Card.Title style={styles.cardTitle}>Hashrate</Card.Title>
+                    <View style={styles.cardContent}>
+                      <View style={styles.dataWrapper}>
+                        <Text style={styles.cardContentTitle}>Real-Time:</Text>
+                        <Text style={styles.cardContentTitle}>Avg 24H:</Text>
+                      </View>
+                      <View style={styles.dataWrapper}>
+                        <Text style={styles.cardContentBody}>
+                          {dashboardData.info.hash5m.toFixed(2)}{' '}
+                          <Text style={styles.unit}>TH/s</Text>
+                        </Text>
+                        <Text style={styles.cardContentBody}>
+                          {dashboardData.info.hash1d.toFixed(2)}{' '}
+                          <Text style={styles.unit}>TH/s</Text>
+                        </Text>
+                      </View>
+                    </View>
+                  </Card>
+                  <Card containerStyle={styles.card}>
+                    <Card.Title style={styles.cardTitle}>Earning</Card.Title>
+                    <View style={styles.cardContent}>
+                      <View style={styles.dataWrapper}>
+                        <Text style={styles.cardContentTitle}>Total</Text>
+                        <Text style={styles.cardContentTitle}>24H</Text>
+                      </View>
+                      <View style={styles.dataWrapper}>
+                        <Text style={styles.cardContentBody}>
+                          {
+                            //@ts-ignore
+                            dashboardData.userEarning[selectedCoin] &&
+                            'balance' in dashboardData.userEarning[selectedCoin]
+                              ? parseFloat(
+                                  dashboardData.userEarning[selectedCoin]
+                                    .balance,
+                                ).toFixed(8)
+                              : 0.0
+                          }
+                          <Text style={styles.unit}>
+                            {' '}
+                            {selectedCoin.toUpperCase()}
+                          </Text>
+                        </Text>
+                        <Text style={styles.cardContentBody}>
+                          {
+                            //@ts-ignore
+                            dashboardData.userEarning[selectedCoin] &&
+                            'yesterday' in
+                              dashboardData.userEarning[selectedCoin]
+                              ? parseFloat(
+                                  dashboardData.userEarning[selectedCoin]
+                                    .yesterday,
+                                ).toFixed(8)
+                              : 0.0
+                          }{' '}
+                          <Text style={styles.unit}>
+                            {selectedCoin.toUpperCase()}
+                          </Text>
+                        </Text>
+                      </View>
+                    </View>
+                  </Card>
                 </View>
-              </Card>
-              <Card containerStyle={styles.card}>
-                <Card.Title style={styles.cardTitle}>Earning</Card.Title>
-                <View style={styles.cardContent}>
-                  <View style={styles.dataWrapper}>
-                    <Text style={styles.cardContentTitle}>Total</Text>
-                    <Text style={styles.cardContentTitle}>24H</Text>
-                  </View>
-                  <View style={styles.dataWrapper}>
-                    <Text style={styles.cardContentBody}>
-                      {
-                        //@ts-ignore
-                        dashboardData.userEarning[selectedCoin] &&
-                        'balance' in dashboardData.userEarning[selectedCoin]
-                          ? parseFloat(
-                              dashboardData.userEarning[selectedCoin].balance,
-                            ).toFixed(8)
-                          : 0.0
-                      }
-                      <Text style={styles.unit}>
-                        {' '}
-                        {selectedCoin.toUpperCase()}
-                      </Text>
-                    </Text>
-                    <Text style={styles.cardContentBody}>
-                      {
-                        //@ts-ignore
-                        dashboardData.userEarning[selectedCoin] &&
-                        'yesterday' in dashboardData.userEarning[selectedCoin]
-                          ? parseFloat(
-                              dashboardData.userEarning[selectedCoin].yesterday,
-                            ).toFixed(8)
-                          : 0.0
-                      }{' '}
-                      <Text style={styles.unit}>
-                        {selectedCoin.toUpperCase()}
-                      </Text>
-                    </Text>
-                  </View>
-                </View>
-              </Card>
-            </View>
-            <View style={styles.cardsContainer}>
-              <Card containerStyle={styles.card}>
-                <View
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <View style={styles.dataWrapper}>
-                    <Text style={styles.cardContentTitle}>All</Text>
-                    <Text style={styles.cardContentBody}>
-                      {dashboardData.info.workers}
-                    </Text>
-                  </View>
-                  <View style={styles.dataWrapper}>
-                    <Text style={styles.cardContentTitle}>Active</Text>
-                    <Text style={styles.cardContentBody}>
-                      {dashboardData.info.workers -
-                        dashboardData.info.offline_workers}
-                    </Text>
-                  </View>
-                  <View style={styles.dataWrapper}>
-                    <Text style={styles.cardContentTitle}>Offline</Text>
-                    <Text style={styles.cardContentBody}>
-                      {dashboardData.info.offline_workers}
-                    </Text>
-                  </View>
-                </View>
-              </Card>
-              <Card containerStyle={styles.card}>
-                <View
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <View
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    <Text style={styles.cardContentTitle}>Balance</Text>
-                    <Text style={styles.cardContentBody}>
-                      {
-                        //@ts-ignore
-                        dashboardData.userEarning[selectedCoin] &&
-                        'balance' in dashboardData.userEarning[selectedCoin]
-                          ? parseFloat(
-                              dashboardData.userEarning[selectedCoin].balance,
-                            ).toFixed(8)
-                          : 0.0
-                      }{' '}
-                      <Text style={styles.unit}>
-                        {selectedCoin.toUpperCase()}
-                      </Text>
-                    </Text>
-                  </View>
-                </View>
-              </Card>
-            </View>
-            <View
-              style={[
-                styles.titleContainer,
-                {marginTop: 15, marginBottom: 10},
-              ]}>
-              <Text style={styles.title}>Hashrate Chart</Text>
-            </View>
-            <View style={styles.chartContainer}>
-              <LineChart
-                data={{
-                  labels: getCurrentChart()
-                    .map((item: any) => {
-                      return socketFiler == 'hour'
-                        ? moment(item.hour, 'YYYYMMDDHH').format('MM-DD HH:mm')
-                        : moment(item.day, 'YYYYMMDD').format('YYYY-MM-DD');
-                    })
-                    .slice(
-                      getCurrentChart().length - 4,
-                      getCurrentChart().length,
-                    ),
-                  datasets: [
-                    {
-                      data: getCurrentChart()
-                        .map((item: any) => {
-                          return socketFiler == 'hour' ? item.hour : item.day;
-                        })
-                        .slice(
-                          getCurrentChart().length - 4,
-                          getCurrentChart().length,
-                        ),
-                    },
-                  ],
-                }}
-                width={Dimensions.get('window').width - 30} // from react-native
-                height={220}
-                yAxisSuffix="TH/s"
-                yAxisInterval={1} // optional, defaults to 1
-                chartConfig={{
-                  backgroundColor: '#f5f5f7',
-                  backgroundGradientFrom: '#f5f5f7',
-                  backgroundGradientTo: '#f5f5f7',
-                  decimalPlaces: 2, // optional, defaults to 2dp
-                  color: (opacity = 1) => `rgba(4, 51, 134, ${opacity})`,
-                  labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                  style: {
-                    borderRadius: 16,
-                  },
-                  propsForDots: {
-                    r: '6',
-                    strokeWidth: '3',
-                    stroke: '#043386',
-                    fill: '#ffffff',
-                  },
-                }}
-                bezier
-                style={{
-                  marginVertical: 8,
-                  borderRadius: 16,
-                }}
-                withInnerLines={false}
-                withOuterLines={false}
-              />
-            </View>
-            <CustomDivider />
-            <View style={styles.titleContainer}>
-              <Text style={styles.title}>Network Info</Text>
-            </View>
-            <View style={styles.cardsContainer}>
-              <Card containerStyle={styles.card}>
-                <View
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <View style={styles.dataWrapper}>
-                    <Text style={styles.customCardTitle}>Net Hashrate</Text>
-                    <Text style={styles.customCardSubtitle}>
-                      {getSelectedCoinInfo()
-                        ? hashToE(
-                            getSelectedCoinInfo().network_hashrate,
-                          ).toFixed(4)
-                        : 0}
-                      <Text style={styles.unit}> EH/s</Text>
-                    </Text>
-                  </View>
-                </View>
-              </Card>
-              <Card containerStyle={styles.card}>
-                <View
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <View
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    <Text style={styles.customCardTitle}>
-                      Daily Revenue Per T
-                    </Text>
+                <View style={styles.cardsContainer}>
+                  <Card containerStyle={styles.card}>
                     <View
                       style={{
                         display: 'flex',
                         flexDirection: 'row',
-                        justifyContent: 'space-around',
+                        justifyContent: 'center',
+                        alignItems: 'center',
                       }}>
-                      <Text style={styles.customCardSubtitle}>
-                        {getSelectedCoinInfo()
-                          ? (
-                              getSelectedCoinInfo()?.reward *
-                              1000000000000 *
-                              24
-                            ).toFixed(7)
-                          : 0}{' '}
-                        <Text style={styles.unit}>
-                          {selectedCoin.toUpperCase()}
+                      <View style={styles.dataWrapper}>
+                        <Text style={styles.cardContentTitle}>All</Text>
+                        <Text style={styles.cardContentBody}>
+                          {dashboardData.info.workers}
                         </Text>
-                      </Text>
-                      <Text style={styles.customCardSubtitle}>
-                        $
-                        {getSelectedCoinInfo()
-                          ? (
-                              getSelectedCoinInfo()?.reward *
-                              1000000000000 *
-                              24 *
-                              getSelectedCoinInfo()?.price
-                            ).toFixed(3)
-                          : 0}
-                      </Text>
+                      </View>
+                      <View style={styles.dataWrapper}>
+                        <Text style={styles.cardContentTitle}>Active</Text>
+                        <Text style={styles.cardContentBody}>
+                          {dashboardData.info.workers -
+                            dashboardData.info.offline_workers}
+                        </Text>
+                      </View>
+                      <View style={styles.dataWrapper}>
+                        <Text style={styles.cardContentTitle}>Offline</Text>
+                        <Text style={styles.cardContentBody}>
+                          {dashboardData.info.offline_workers}
+                        </Text>
+                      </View>
                     </View>
-                  </View>
+                  </Card>
+                  <Card containerStyle={styles.card}>
+                    <View
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <View
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}>
+                        <Text style={styles.cardContentTitle}>Balance</Text>
+                        <Text style={styles.cardContentBody}>
+                          {
+                            //@ts-ignore
+                            dashboardData.userEarning[selectedCoin] &&
+                            'balance' in dashboardData.userEarning[selectedCoin]
+                              ? parseFloat(
+                                  dashboardData.userEarning[selectedCoin]
+                                    .balance,
+                                ).toFixed(8)
+                              : 0.0
+                          }{' '}
+                          <Text style={styles.unit}>
+                            {selectedCoin.toUpperCase()}
+                          </Text>
+                        </Text>
+                      </View>
+                    </View>
+                  </Card>
                 </View>
-              </Card>
+              </>
+            )}
+            <Skeleton
+              animation="pulse"
+              width={
+                messageHistory.length < 2 ? Dimensions.get('window').width : 0
+              }
+              height={messageHistory.length < 2 ? 200 : 0}
+            />
+            <CustomDivider />
+            <View style={styles.titleContainer}>
+              <Text style={styles.title}>Network Info</Text>
             </View>
-            <View style={styles.cardsContainer}>
-              <Card containerStyle={styles.card}>
-                <View
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <View style={styles.dataWrapper}>
-                    <Text style={styles.customCardTitle}>Difficulty</Text>
-                    <Text style={styles.customCardSubtitle}>
-                      {getSelectedCoinInfo()
-                        ? addThousandSep(getSelectedCoinInfo()?.difficulty)
-                        : 0}
-                    </Text>
-                  </View>
+            {coinsInfo.length > 0 && (
+              <>
+                <View style={styles.cardsContainer}>
+                  <Card containerStyle={styles.card}>
+                    <View
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <View style={styles.dataWrapper}>
+                        <Text style={styles.customCardTitle}>Net Hashrate</Text>
+                        <Text style={styles.customCardSubtitle}>
+                          {getSelectedCoinInfo()
+                            ? hashToE(
+                                getSelectedCoinInfo().network_hashrate,
+                              ).toFixed(4)
+                            : 0}
+                          <Text style={styles.unit}> EH/s</Text>
+                        </Text>
+                      </View>
+                    </View>
+                  </Card>
+                  <Card containerStyle={styles.card}>
+                    <View
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <View
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}>
+                        <Text style={styles.customCardTitle}>
+                          Daily Revenue Per T
+                        </Text>
+                        <View
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            justifyContent: 'space-around',
+                          }}>
+                          <Text style={styles.customCardSubtitle}>
+                            {getSelectedCoinInfo()
+                              ? (
+                                  getSelectedCoinInfo()?.reward *
+                                  1000000000000 *
+                                  24
+                                ).toFixed(7)
+                              : 0}{' '}
+                            <Text style={styles.unit}>
+                              {selectedCoin.toUpperCase()}
+                            </Text>
+                          </Text>
+                          <Text style={styles.customCardSubtitle}>
+                            $
+                            {getSelectedCoinInfo()
+                              ? (
+                                  getSelectedCoinInfo()?.reward *
+                                  1000000000000 *
+                                  24 *
+                                  getSelectedCoinInfo()?.price
+                                ).toFixed(3)
+                              : 0}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  </Card>
                 </View>
-              </Card>
-              <Card containerStyle={styles.card}>
-                <View
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <View
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    <Text style={styles.customCardTitle}>Coin Price</Text>
-                    <Text style={styles.customCardSubtitle}>
-                      $
-                      {getSelectedCoinInfo()
-                        ? addThousandSep(
-                            getSelectedCoinInfo()?.price.toFixed(2),
-                          )
-                        : 0}
-                    </Text>
-                  </View>
+                <View style={styles.cardsContainer}>
+                  <Card containerStyle={styles.card}>
+                    <View
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <View style={styles.dataWrapper}>
+                        <Text style={styles.customCardTitle}>Difficulty</Text>
+                        <Text style={styles.customCardSubtitle}>
+                          {getSelectedCoinInfo()
+                            ? addThousandSep(getSelectedCoinInfo()?.difficulty)
+                            : 0}
+                        </Text>
+                      </View>
+                    </View>
+                  </Card>
+                  <Card containerStyle={styles.card}>
+                    <View
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <View
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}>
+                        <Text style={styles.customCardTitle}>Coin Price</Text>
+                        <Text style={styles.customCardSubtitle}>
+                          $
+                          {getSelectedCoinInfo()
+                            ? addThousandSep(
+                                getSelectedCoinInfo()?.price.toFixed(2),
+                              )
+                            : 0}
+                        </Text>
+                      </View>
+                    </View>
+                  </Card>
                 </View>
-              </Card>
-            </View>
-            <View style={styles.cardsContainer}>
-              <Card containerStyle={styles.card}>
-                <View
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <View style={styles.dataWrapper}>
-                    <Text style={styles.customCardTitle}>Volume</Text>
-                    <Text style={styles.customCardSubtitle}>
-                      $
-                      {getSelectedCoinInfo()
-                        ? addThousandSep(
-                            getSelectedCoinInfo()?.volume.toFixed(2),
-                          )
-                        : 0}
-                    </Text>
-                  </View>
+                <View style={styles.cardsContainer}>
+                  <Card containerStyle={styles.card}>
+                    <View
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <View style={styles.dataWrapper}>
+                        <Text style={styles.customCardTitle}>Volume</Text>
+                        <Text style={styles.customCardSubtitle}>
+                          $
+                          {getSelectedCoinInfo()
+                            ? addThousandSep(
+                                getSelectedCoinInfo()?.volume.toFixed(2),
+                              )
+                            : 0}
+                        </Text>
+                      </View>
+                    </View>
+                  </Card>
+                  <Card containerStyle={styles.card}>
+                    <View
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <View
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}>
+                        <Text style={styles.customCardTitle}>Block Reward</Text>
+                        <Text style={styles.customCardSubtitle}>
+                          {getSelectedCoinInfo()
+                            ? getSelectedCoinInfo()?.reward_block
+                            : 0}
+                        </Text>
+                      </View>
+                    </View>
+                  </Card>
                 </View>
-              </Card>
-              <Card containerStyle={styles.card}>
-                <View
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-                  <View
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    <Text style={styles.customCardTitle}>Block Reward</Text>
-                    <Text style={styles.customCardSubtitle}>
-                      {getSelectedCoinInfo()
-                        ? getSelectedCoinInfo()?.reward_block
-                        : 0}
-                    </Text>
-                  </View>
-                </View>
-              </Card>
-            </View>
+              </>
+            )}
+            <Skeleton
+              animation="pulse"
+              width={coinsInfo.length == 0 ? Dimensions.get('window').width : 0}
+              height={coinsInfo.length == 0 ? 210 : 0}
+            />
             <View style={[styles.titleContainer, {marginTop: 15}]}>
               <Text style={styles.title}>Pool Info</Text>
             </View>
@@ -860,9 +820,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: gStyles.title.font,
     fontWeight: 'bold',
-  },
-  chartContainer: {
-    paddingHorizontal: 15,
   },
 });
 
