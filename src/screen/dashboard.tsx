@@ -197,7 +197,10 @@ const Dashboard = () => {
 
   return (
     <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      <StatusBar
+        backgroundColor={'#F5F5F7'}
+        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+      />
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         style={backgroundStyle}>

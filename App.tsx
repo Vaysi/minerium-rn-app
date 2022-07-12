@@ -14,6 +14,8 @@ import {Icon} from '@rneui/base';
 import {StyleSheet} from 'react-native';
 import Splash from './src/screen/splash';
 import Calculator from './src/screen/calculator';
+import Register from './src/screen/register';
+import Verify from './src/screen/verify';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -122,6 +124,16 @@ const App = () => {
               name="Login"
               options={{headerShown: false}}
               component={Login}
+            />
+            <Stack.Screen
+              name="Register"
+              options={{headerShown: false}}
+              component={Register}
+            />
+            <Stack.Screen
+              name="Verify"
+              options={{headerShown: false}}
+              component={Verify}
             />
             <Stack.Screen
               name="Splash"

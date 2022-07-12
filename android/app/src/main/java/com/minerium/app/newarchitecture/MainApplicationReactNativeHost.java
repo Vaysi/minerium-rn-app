@@ -1,4 +1,4 @@
-package com.mineriumapplication.newarchitecture;
+package com.minerium.app.newarchitecture;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -19,9 +19,9 @@ import com.facebook.react.fabric.CoreComponentsRegistry;
 import com.facebook.react.fabric.EmptyReactNativeConfig;
 import com.facebook.react.fabric.FabricJSIModuleProvider;
 import com.facebook.react.uimanager.ViewManagerRegistry;
-import com.mineriumapplication.BuildConfig;
-import com.mineriumapplication.newarchitecture.components.MainComponentsRegistry;
-import com.mineriumapplication.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
+import com.minerium.app.BuildConfig;
+import com.minerium.app.newarchitecture.components.MainComponentsRegistry;
+import com.minerium.app.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
 import java.util.ArrayList;
 import java.util.List;
 

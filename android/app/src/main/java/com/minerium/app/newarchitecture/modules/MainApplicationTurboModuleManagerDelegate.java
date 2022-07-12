@@ -1,4 +1,4 @@
-package com.mineriumapplication.newarchitecture.modules;
+package com.minerium.app.newarchitecture.modules;
 
 import com.facebook.jni.HybridData;
 import com.facebook.react.ReactPackage;

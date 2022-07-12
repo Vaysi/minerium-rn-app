@@ -16,46 +16,55 @@ import {Icon, Image, Input} from '@rneui/themed';
 import gStyles from '../utils/gStyles';
 import {Button} from '@rneui/base';
 import {userContext} from '../utils/context';
-import {$$userLogin} from '../utils/api';
+import {$$resendVerification, $$userLogin, $$verifyEmail} from '../utils/api';
 import Header from '../shared-components/header';
-import {addThousandSep} from '../utils/functions';
+import {addThousandSep, msToHMS} from '../utils/functions';
+import useCountDown from 'react-countdown-hook';
 
 // @ts-ignore
-const Login = ({navigation}) => {
+const Verify = ({route, navigation}) => {
   const isDarkMode = useColorScheme() === 'dark';
 
+  const {email: userEmail} = route.params;
   const {user, setUser} = useContext(userContext);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState<string>((userEmail as string) || '');
+  const [token, setToken] = useState('');
   const [loading, setLoading] = useState(false);
+  const [timeLeft, {start, pause, resume, reset}] = useCountDown(565000, 1000);
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
   useEffect(() => {
-    if (user && 'loggedIn' in user && user.loggedIn) {
-      navigation.navigate('Main');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+    start();
+    setEmail((userEmail as string) || '');
+  }, [userEmail]);
 
-  const submit = () => {
-    if (email.length < 4 || password.length < 4) {
-      Alert.alert('Invalid Data', 'Please Enter Valid Values');
-      return;
-    }
+  const restart = React.useCallback(() => {
+    resend();
+    start();
+  }, []);
+
+  const resend = () => {
     setLoading(true);
-    $$userLogin(email, password)
-      .then(response => {
-        setUser({...response.data.user, loggedIn: true});
-        setLoading(false);
-        navigation.navigate('Main');
-      })
-      .catch(reason => {
-        setLoading(false);
-        console.log(reason);
-      });
+    $$resendVerification(email).then(() => {
+      Alert.alert(
+        "We sent you a new verification token. Please check your email and if it's not there, please check the spam folder",
+      );
+      restart();
+      setLoading(false);
+    });
+  };
+
+  const verify = () => {
+    setLoading(true);
+    $$verifyEmail(email, token).then(res => {
+      Alert.alert('Congratulation', "You're Account Successfully Verified");
+      setUser({...res.data, loggedIn: true});
+      navigation.navigate('Main');
+      setLoading(false);
+    });
   };
 
   return (
@@ -69,9 +78,6 @@ const Login = ({navigation}) => {
         style={backgroundStyle}>
         <View>
           <Header />
-          <View style={styles.welcome}>
-            <Text style={styles.welcomeText}>Welcome to our Community</Text>
-          </View>
           <View style={styles.container}>
             <View style={styles.formContainer}>
               <Input
@@ -83,40 +89,48 @@ const Login = ({navigation}) => {
                 containerStyle={styles.inputContainer}
                 inputStyle={styles.inputItself}
                 inputContainerStyle={styles.selfInputContainer}
-                label={'Email / Username'}
+                label={'Email'}
                 labelStyle={styles.inputLabel}
               />
               <Input
-                secureTextEntry
-                value={password}
-                onChangeText={text => setPassword(text)}
+                value={token}
+                onChangeText={text => setToken(text)}
                 style={styles.input}
                 containerStyle={styles.inputContainer}
                 inputStyle={styles.inputItself}
                 inputContainerStyle={styles.selfInputContainer}
-                label={'Password'}
+                label={'Token'}
                 labelStyle={styles.inputLabel}
               />
-              <Button
-                onPress={submit}
-                titleStyle={styles.submitButton}
-                containerStyle={styles.submitButtonContainer}
-                buttonStyle={styles.submitButtonSelf}
-                loading={loading}
-                radius={10}>
-                Log in
-              </Button>
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.navigate('Register');
-                }}
-                style={{marginTop: 10}}
-                hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-                <Text style={styles.signup}>
-                  Don’t have an account? &nbsp;
-                  <Text style={styles.register}>Sign up</Text>
-                </Text>
-              </TouchableOpacity>
+              <View style={styles.buttonContainer}>
+                <Button
+                  onPress={verify}
+                  titleStyle={styles.submitButton}
+                  containerStyle={styles.submitButtonContainer}
+                  buttonStyle={styles.submitButtonSelf}
+                  loading={loading}
+                  disabled={token.length < 2}
+                  radius={10}>
+                  Validate
+                </Button>
+                <Button
+                  onPress={restart}
+                  titleStyle={styles.submitButton}
+                  containerStyle={styles.submitButtonContainer}
+                  buttonStyle={styles.submitButtonSelf}
+                  loading={loading}
+                  iconPosition={'left'}
+                  disabled={timeLeft > 0}
+                  radius={10}>
+                  {msToHMS(timeLeft)} Resend Email
+                </Button>
+              </View>
+
+              <Text style={styles.signup}>
+                We automatically send a verification email to the email address
+                you used to sign up for your account, but you can resend the
+                verification email if you didn't receive it.
+              </Text>
             </View>
           </View>
         </View>
@@ -153,7 +167,7 @@ const styles = StyleSheet.create({
     color: '#D4E2F4',
   },
   submitButtonContainer: {
-    width: '94%',
+    marginHorizontal: 10,
   },
   welcome: {
     alignItems: 'center',
@@ -205,11 +219,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#000',
     marginVertical: 10,
+    textAlign: 'justify',
   },
-  register: {
-    fontWeight: 'bold',
-    textDecorationLine: 'underline',
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
   },
 });
 
-export default Login;
+export default Verify;
