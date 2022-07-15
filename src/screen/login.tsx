@@ -40,13 +40,13 @@ const Login = ({navigation}) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  const submit = () => {
+  const submit = async () => {
     if (email.length < 4 || password.length < 4) {
       Alert.alert('Invalid Data', 'Please Enter Valid Values');
       return;
     }
     setLoading(true);
-    $$userLogin(email, password)
+    await $$userLogin(email, password)
       .then(response => {
         setUser({...response.data.user, loggedIn: true});
         setLoading(false);

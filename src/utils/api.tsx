@@ -195,11 +195,12 @@ const $$userRegister = (
     });
 };
 
-const $$earningsBalance = () => {
+const $$earningsBalance = (token: string) => {
   return instance
     .request({
       method: routes.earnings.balance.method as Method,
       url: routes.earnings.balance.route,
+      headers: {Authorization: `Bearer ${token}`},
     })
     .then(response => response.data)
     .catch(error => {

@@ -16,6 +16,8 @@ import Splash from './src/screen/splash';
 import Calculator from './src/screen/calculator';
 import Register from './src/screen/register';
 import Verify from './src/screen/verify';
+import Settings from './src/screen/settings';
+import Payment from './src/screen/settings/payment';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -80,6 +82,30 @@ const HomeTabs = () => (
       }}
       name={'Calculator'}
       component={Calculator}
+    />
+    <Tab.Screen
+      options={{
+        title: 'Settings',
+        tabBarIcon: ({color, size}) => (
+          <Icon
+            name={'settings'}
+            type={'MaterialIcons'}
+            size={30}
+            style={styles.tabsIcon}
+            color={'#E5ECF6'}
+          />
+        ),
+      }}
+      name={'Settings'}
+      component={Settings}
+    />
+    <Tab.Screen
+      options={{
+        title: 'Payment Settings',
+        tabBarButton: () => <></>,
+      }}
+      name="PaymentSettings"
+      component={Payment}
     />
   </Tab.Navigator>
 );

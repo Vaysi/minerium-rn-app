@@ -30,3 +30,15 @@ export interface MinerStats_Coins {
   reward: number;
   reward_block: number;
 }
+
+export interface EarningBalance {
+  balance: {
+    minimum: number;
+    paid: number;
+    price: number;
+    wallet: string;
+  };
+  currency: string;
+  total: number;
+  yesterday: number;
+}

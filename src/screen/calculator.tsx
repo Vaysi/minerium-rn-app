@@ -365,13 +365,6 @@ const Calculator = (props: any) => {
         style={backgroundStyle}>
         <View>
           <Header
-            left={
-              <Icon
-                name={'arrow-back'}
-                type={'MaterialIcons'}
-                onPress={() => props.navigation.goBack()}
-              />
-            }
             alignCenter
             main={<Text style={styles.headerTitle}>Calculator</Text>}
           />

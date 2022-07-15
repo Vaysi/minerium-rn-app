@@ -1,7 +1,6 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
   Dimensions,
-  Image,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -14,7 +13,6 @@ import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {Card} from '@rneui/themed';
 import gStyles from '../utils/gStyles';
 import {Icon, Skeleton, Text} from '@rneui/base';
-import SelectDropdown from 'react-native-select-dropdown';
 import Header from '../shared-components/header';
 import {userContext} from '../utils/context';
 import CustomDivider from '../shared-components/divider';
@@ -22,6 +20,7 @@ import {addThousandSep, hashToE, hasJsonStructure} from '../utils/functions';
 import {$$getCoinsData} from '../utils/api';
 import useWebSocket from 'react-native-use-websocket';
 import {MinerStats_Coins} from '../utils/interfaces';
+import CoinsSelect from '../shared-components/coinsSelect';
 
 const Dashboard = () => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -29,80 +28,6 @@ const Dashboard = () => {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : '#F5F5F7',
   };
-
-  const coins = [
-    {title: 'BTC', image: require('../../assets/coins/btc.png')},
-    {title: 'BCH', image: require('../../assets/coins/bch.png')},
-    {title: 'DGB', image: require('../../assets/coins/dgb.png')},
-  ];
-
-  const [selectedCoin, setSelectedCoin] = useState('btc');
-
-  let selectButton = (
-    // @ts-ignore
-    <SelectDropdown
-      data={coins}
-      defaultValue={selectedCoin}
-      defaultValueByIndex={0}
-      onSelect={(selectedItem: any) => {
-        setSelectedCoin(selectedItem.title.toLowerCase());
-      }}
-      buttonStyle={styles.dropdown3BtnStyle}
-      renderCustomizedButtonChild={(selectedItem: any) => {
-        return (
-          <View style={styles.dropdown3BtnChildStyle}>
-            {selectedItem ? (
-              <Image
-                source={selectedItem.image}
-                style={styles.dropdown3BtnImage}
-              />
-            ) : (
-              <Icon
-                name="add-circle-outline"
-                type={'MaterialIcons'}
-                color={'#444'}
-                size={32}
-              />
-            )}
-            <Text style={styles.dropdown3BtnTxt}>
-              {selectedItem ? selectedItem.title : 'Select a Coin'}
-            </Text>
-            <Icon
-              name={'expand-more'}
-              type={'MaterialIcons'}
-              size={22}
-              color={'#043180'}
-            />
-          </View>
-        );
-      }}
-      dropdownStyle={styles.dropdown3DropdownStyle}
-      rowStyle={styles.dropdown3RowStyle}
-      selectedRowStyle={styles.dropdown1SelectedRowStyle}
-      renderCustomizedRowChild={(item: any) => {
-        return (
-          <View style={styles.dropdown3RowChildStyle}>
-            <Image source={item.image} style={styles.dropdownRowImage} />
-            <Text style={styles.dropdown3RowTxt}>{item.title}</Text>
-          </View>
-        );
-      }}
-      search
-      searchInputStyle={styles.dropdown3searchInputStyleStyle}
-      searchPlaceHolder={'Search here'}
-      searchPlaceHolderColor={'#F8F8F8'}
-      renderSearchInputLeftIcon={() => {
-        return (
-          <Icon
-            name={'search'}
-            type={'MaterialIcons'}
-            color={'#FFF'}
-            size={18}
-          />
-        );
-      }}
-    />
-  );
 
   const {user} = useContext(userContext);
   const [dashboardData, setDashboardData] = useState({
@@ -135,6 +60,7 @@ const Dashboard = () => {
 
   const [messageHistory, setMessageHistory] = useState([]);
   const [socketFiler, setSocketFilter] = useState<'day' | 'hour'>('day');
+  const [selectedCoin, setSelectedCoin] = useState('btc');
 
   useEffect(() => {
     if (lastMessage !== null) {
@@ -187,14 +113,6 @@ const Dashboard = () => {
     return null;
   };
 
-  const getCurrentChart = () => {
-    if (socketFiler == 'day') {
-      return dashboardData.graphDay;
-    } else {
-      return dashboardData.graphHour;
-    }
-  };
-
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
@@ -215,7 +133,7 @@ const Dashboard = () => {
                 style={{marginTop: -3}}
               />
             }
-            right={selectButton}
+            right={<CoinsSelect selection={{selectedCoin, setSelectedCoin}} />}
           />
           <View style={styles.container}>
             {messageHistory.length > 1 && (
@@ -390,12 +308,14 @@ const Dashboard = () => {
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
+                        flexWrap: 'wrap',
                       }}>
                       <View
                         style={{
                           display: 'flex',
                           justifyContent: 'center',
                           alignItems: 'center',
+                          flexWrap: 'wrap',
                         }}>
                         <Text style={styles.customCardTitle}>
                           Daily Revenue Per T
@@ -405,6 +325,7 @@ const Dashboard = () => {
                             display: 'flex',
                             flexDirection: 'row',
                             justifyContent: 'space-around',
+                            flexWrap: 'wrap',
                           }}>
                           <Text style={styles.customCardSubtitle}>
                             {getSelectedCoinInfo()
@@ -442,6 +363,7 @@ const Dashboard = () => {
                         flexDirection: 'row',
                         justifyContent: 'center',
                         alignItems: 'center',
+                        flexWrap: 'wrap',
                       }}>
                       <View style={styles.dataWrapper}>
                         <Text style={styles.customCardTitle}>Difficulty</Text>
@@ -465,6 +387,7 @@ const Dashboard = () => {
                           display: 'flex',
                           justifyContent: 'center',
                           alignItems: 'center',
+                          flexWrap: 'wrap',
                         }}>
                         <Text style={styles.customCardTitle}>Coin Price</Text>
                         <Text style={styles.customCardSubtitle}>
@@ -676,7 +599,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 50,
-    width: 170,
+    width: (Dimensions.get('window').width - 20) / 2,
   },
   cardTitle: {
     fontFamily: gStyles.title.font,
@@ -694,17 +617,17 @@ const styles = StyleSheet.create({
   cardContentTitle: {
     color: '#00000087',
     fontFamily: gStyles.title.font,
-    fontSize: 12,
-    marginRight: 10,
+    fontSize: 11,
+    marginRight: 5,
     textAlign: 'center',
   },
   cardContentBody: {
     color: '#000',
     fontFamily: gStyles.title.font,
     fontWeight: 'bold',
-    fontSize: 12,
+    fontSize: 11,
     textAlign: 'center',
-    marginRight: 10,
+    marginRight: 5,
   },
   dataWrapper: {
     display: 'flex',
@@ -712,67 +635,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     textAlign: 'center',
   },
-  dropdown3BtnStyle: {
-    width: 120,
-    height: 34,
-    backgroundColor: '#D4E2F4',
-    paddingHorizontal: 0,
-    borderWidth: 1,
-    borderRadius: 10,
-    borderColor: '#04338615',
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 4,
-      height: 8,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 30,
-  },
-  dropdown3BtnChildStyle: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-  },
-  dropdown3BtnImage: {width: 22, height: 22, resizeMode: 'cover'},
-  dropdown3BtnTxt: {
-    color: '#043180',
-    textAlign: 'center',
-    fontWeight: '600',
-    fontFamily: gStyles.fonts.poppins,
-    fontSize: 15,
-    marginLeft: 11,
-    marginRight: 7,
-  },
-  dropdown3DropdownStyle: {backgroundColor: 'slategray'},
-  dropdown3RowStyle: {
-    backgroundColor: 'slategray',
-    borderBottomColor: '#444',
-    height: 50,
-  },
-  dropdown3RowChildStyle: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingHorizontal: 18,
-  },
-  dropdownRowImage: {width: 22, height: 22, resizeMode: 'cover'},
-  dropdown3RowTxt: {
-    color: '#F1F1F1',
-    textAlign: 'center',
-    fontWeight: 'bold',
-    fontSize: 15,
-    marginHorizontal: 12,
-  },
-  dropdown3searchInputStyleStyle: {
-    backgroundColor: 'slategray',
-    borderBottomWidth: 1,
-    borderBottomColor: '#FFF',
-  },
-  dropdown1SelectedRowStyle: {backgroundColor: 'rgba(0,0,0,0.1)'},
   cardsContainer: {
     display: 'flex',
     flexDirection: 'row',
@@ -820,7 +682,7 @@ const styles = StyleSheet.create({
   },
   miningAddress: {
     color: '#043386',
-    fontSize: 15,
+    fontSize: 13,
     fontFamily: gStyles.title.font,
     fontWeight: 'bold',
   },

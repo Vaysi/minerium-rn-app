@@ -21,7 +21,7 @@ const Header = (props: Props) => {
       props.main
     ) : (
       <Image
-        source={require('../../assets/logoType.png')}
+        source={require('../../assets/logoType.new.png')}
         style={styles.logo}
         resizeMode={'contain'}
       />

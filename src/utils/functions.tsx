@@ -1,4 +1,4 @@
-export function addThousandSep(num: number | string) {
+export function addThousandSep(num: number | string | any) {
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
