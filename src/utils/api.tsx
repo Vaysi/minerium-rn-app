@@ -1,5 +1,6 @@
 import axios, {AxiosInstance, AxiosRequestConfig, Method} from 'axios';
 import {ToastAndroid} from 'react-native';
+import * as RootNavigation from '../../RootNavigation';
 
 const axiosConfig: AxiosRequestConfig = {
   baseURL: 'https://pool.minerium.com/api/',
@@ -11,8 +12,14 @@ const {POST, GET, DELETE} = {POST: 'POST', GET: 'GET', DELETE: 'DELETE'};
 
 instance.interceptors.response.use(
   response => response,
-  error => {
+  async error => {
     ToastAndroid.show(`${error.response.data.message} `, 2000);
+    console.log(error.response.data.status);
+
+    if (error.response.data.status == 401) {
+      console.log(error.response.data.status);
+      RootNavigation.navigate('Splash', {logout: true});
+    }
     throw error;
   },
 );
@@ -236,6 +243,7 @@ const $$paymentHistory = () => {
 };
 
 const $$workersList = (
+  token: any,
   groupId: Number | null | string = null,
   since: number = 1,
 ) => {
@@ -251,6 +259,7 @@ const $$workersList = (
     .request({
       method: method as Method,
       url: route,
+      headers: {Authorization: `Bearer ${token}`},
       params: {
         since,
       },
@@ -261,11 +270,12 @@ const $$workersList = (
     });
 };
 
-const $$workersGroups = () => {
+const $$workersGroups = (token: any) => {
   return instance
     .request({
       method: routes.workers.groupList.method as Method,
       url: routes.workers.groupList.route,
+      headers: {Authorization: `Bearer ${token}`},
     })
     .then(response => response.data)
     .catch(error => {

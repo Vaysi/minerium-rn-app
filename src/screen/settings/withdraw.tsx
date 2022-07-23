@@ -11,18 +11,17 @@ import {
   View,
 } from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
-import {Icon} from '@rneui/base';
+import {Button, Icon, Input} from '@rneui/base';
 import Header from '../../shared-components/header';
 import gStyles from '../../utils/gStyles';
-import Statistics from '../../shared-components/statistics';
 import CoinsSelect from '../../shared-components/coinsSelect';
 import {Card} from '@rneui/themed';
-import {$$earningsBalance} from '../../utils/api';
+import {$$earningsBalance, $$getCoinsData} from '../../utils/api';
 import {EarningBalance} from '../../utils/interfaces';
 import {userContext} from '../../utils/context';
 import {addThousandSep} from '../../utils/functions';
 
-const Payment = (props: any) => {
+const Withdraw = (props: any) => {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
@@ -71,6 +70,15 @@ const Payment = (props: any) => {
     }
   };
 
+  useEffect(() => {
+    $$getCoinsData().then((response: Array<object>) => {
+      //@ts-ignore
+      setSelectedCoinData(
+        response.filter(item => item.algorithm === 'SHA-256'),
+      );
+    });
+  }, []);
+
   return (
     <SafeAreaView style={[backgroundStyle, {flex: 1}]}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
@@ -82,11 +90,11 @@ const Payment = (props: any) => {
             <Icon
               name={'arrow-back'}
               type={'MaterialIcons'}
-              onPress={() => props.navigation.navigate('Settings')}
+              onPress={() => props.navigation.navigate('PaymentSettings')}
             />
           }
           alignCenter
-          main={<Text style={styles.headerTitle}>Payment settings</Text>}
+          main={<Text style={styles.headerTitle}>Withdrawal</Text>}
           right={<CoinsSelect selection={{selectedCoin, setSelectedCoin}} />}
         />
         <View style={styles.container}>
@@ -158,21 +166,63 @@ const Payment = (props: any) => {
               </View>
             </Card>
           </View>
+          <Input
+            placeholder="Amount"
+            containerStyle={{
+              marginTop: 30,
+            }}
+          />
+          <Input
+            placeholder="Address"
+            rightIcon={
+              <Button
+                titleStyle={styles.submitButton}
+                buttonStyle={styles.submitButtonSelf}>
+                Paste
+              </Button>
+            }
+            rightIconContainerStyle={{
+              padding: 0,
+              marginRight: -4,
+            }}
+          />
         </View>
         <View style={styles.subContainer}>
-          <TouchableOpacity
-            style={styles.secondButton}
-            onPress={() => props.navigation.navigate('Withdraw')}>
-            <Text style={styles.secondButtonText}>Withdrawal</Text>
+          <TouchableOpacity style={styles.secondButton}>
+            <Text style={styles.secondButtonText}>Copy</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.secondButton}>
+            <Text style={styles.secondButtonText}>Share</Text>
           </TouchableOpacity>
         </View>
-        <Statistics setSelectedCoinData={setSelectedCoinData} />
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  submitButton: {
+    fontFamily: gStyles.fonts.poppins,
+    fontSize: 15,
+    color: '#D4E2F4',
+  },
+  submitButtonSelf: {
+    backgroundColor: '#043386',
+    borderWidth: 1,
+    borderTopRightRadius: 3,
+    borderBottomRightRadius: 3,
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
+    borderColor: '#d4e2f418',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 6,
+      height: 12,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 20,
+  },
   container: {
     width: '100%',
     marginLeft: 'auto',
@@ -192,7 +242,7 @@ const styles = StyleSheet.create({
   secondButton: {
     textAlign: 'center',
     backgroundColor: '#043386',
-    paddingVertical: 10,
+    paddingVertical: 5,
     borderRadius: 5,
     marginBottom: 15,
     shadowColor: '#000000',
@@ -205,12 +255,12 @@ const styles = StyleSheet.create({
     elevation: 30,
     paddingHorizontal: 15,
     marginHorizontal: 7,
-    width: (Dimensions.get('window').width - 32) / 2,
+    width: (Dimensions.get('window').width - 32) / 3,
   },
   secondButtonText: {
     textAlign: 'center',
-    fontSize: 16,
-    fontFamily: gStyles.fonts.openSans,
+    fontSize: 15,
+    fontFamily: gStyles.fonts.poppins,
     color: '#fff',
     fontWeight: '600',
   },
@@ -285,4 +335,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Payment;
+export default Withdraw;

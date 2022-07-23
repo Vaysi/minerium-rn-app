@@ -17,12 +17,12 @@ import gStyles from '../../utils/gStyles';
 import Statistics from '../../shared-components/statistics';
 import CoinsSelect from '../../shared-components/coinsSelect';
 import {Card} from '@rneui/themed';
-import {$$earningsBalance} from '../../utils/api';
+import {$$earningsBalance, $$getCoinsData} from '../../utils/api';
 import {EarningBalance} from '../../utils/interfaces';
 import {userContext} from '../../utils/context';
 import {addThousandSep} from '../../utils/functions';
 
-const Payment = (props: any) => {
+const Deposit = (props: any) => {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
@@ -71,6 +71,15 @@ const Payment = (props: any) => {
     }
   };
 
+  useEffect(() => {
+    $$getCoinsData().then((response: Array<object>) => {
+      //@ts-ignore
+      setSelectedCoinData(
+        response.filter(item => item.algorithm === 'SHA-256'),
+      );
+    });
+  }, []);
+
   return (
     <SafeAreaView style={[backgroundStyle, {flex: 1}]}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
@@ -82,11 +91,11 @@ const Payment = (props: any) => {
             <Icon
               name={'arrow-back'}
               type={'MaterialIcons'}
-              onPress={() => props.navigation.navigate('Settings')}
+              onPress={() => props.navigation.navigate('PaymentSettings')}
             />
           }
           alignCenter
-          main={<Text style={styles.headerTitle}>Payment settings</Text>}
+          main={<Text style={styles.headerTitle}>Deposit</Text>}
           right={<CoinsSelect selection={{selectedCoin, setSelectedCoin}} />}
         />
         <View style={styles.container}>
@@ -158,15 +167,15 @@ const Payment = (props: any) => {
               </View>
             </Card>
           </View>
+          <View style={styles.subContainer}>
+            <TouchableOpacity style={styles.secondButton}>
+              <Text style={styles.secondButtonText}>Copy</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.secondButton}>
+              <Text style={styles.secondButtonText}>Share</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        <View style={styles.subContainer}>
-          <TouchableOpacity
-            style={styles.secondButton}
-            onPress={() => props.navigation.navigate('Withdraw')}>
-            <Text style={styles.secondButtonText}>Withdrawal</Text>
-          </TouchableOpacity>
-        </View>
-        <Statistics setSelectedCoinData={setSelectedCoinData} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -184,7 +193,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginLeft: 'auto',
     marginRight: 'auto',
-    marginBottom: 40,
+    marginVertical: 40,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
@@ -192,7 +201,7 @@ const styles = StyleSheet.create({
   secondButton: {
     textAlign: 'center',
     backgroundColor: '#043386',
-    paddingVertical: 10,
+    paddingVertical: 5,
     borderRadius: 5,
     marginBottom: 15,
     shadowColor: '#000000',
@@ -205,14 +214,14 @@ const styles = StyleSheet.create({
     elevation: 30,
     paddingHorizontal: 15,
     marginHorizontal: 7,
-    width: (Dimensions.get('window').width - 32) / 2,
+    width: (Dimensions.get('window').width - 32) / 3,
   },
   secondButtonText: {
     textAlign: 'center',
     fontSize: 16,
-    fontFamily: gStyles.fonts.openSans,
+    fontFamily: gStyles.fonts.poppins,
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: '500',
   },
   toggleBar: {
     flexDirection: 'row',
@@ -285,4 +294,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Payment;
+export default Deposit;

@@ -6,6 +6,7 @@ import {Row, Table} from 'react-native-table-component';
 import {MinerStats_Coins} from '../utils/interfaces';
 import {$$getCoinsData} from '../utils/api';
 import {addThousandSep, hashToE} from '../utils/functions';
+import moment from 'moment/moment';
 
 const firstCell = (title: string, subtitle: string) => {
   let source = require('../../assets/coins/btc.png');
@@ -24,7 +25,7 @@ const firstCell = (title: string, subtitle: string) => {
       break;
   }
   return (
-    <View style={styles.coinContainer}>
+    <View style={styles.coinContainer} key={title.toLowerCase()}>
       <View style={{display: 'flex'}}>
         <Image source={source} style={styles.coinIcon} resizeMode={'contain'} />
       </View>
@@ -37,7 +38,9 @@ const firstCell = (title: string, subtitle: string) => {
 };
 
 const textCell = (title: string, subtitle?: string) => (
-  <View style={{display: 'flex', marginLeft: 5}}>
+  <View
+    style={{display: 'flex', marginLeft: 5}}
+    key={`text-${title.toLowerCase()}`}>
     <Text
       style={{
         color: '#000',
@@ -66,18 +69,18 @@ interface Props {
 const Statistics = (props: Props) => {
   const [table, setTable] = useState({
     tableHead: [
-      <View style={styles.tableHeader}>
+      <View key={'coins'}>
         <View>
           <Text style={styles.tableHeaderTitle}>Coins</Text>
           <Text style={styles.tableHeaderSubtitle}>Algorithm</Text>
         </View>
       </View>,
-      <View style={styles.tableHeader}>
+      <View key={'price'}>
         <View>
           <Text style={styles.tableHeaderTitle}>Price</Text>
         </View>
       </View>,
-      <View style={styles.tableHeader}>
+      <View key={'net_hash'}>
         <View>
           <Text style={styles.tableHeaderTitle}>Network Hashrate</Text>
         </View>
@@ -118,20 +121,20 @@ const Statistics = (props: Props) => {
       <Text style={styles.title}>Statistics</Text>
       <Table>
         <Row
+          key={moment.now().toString()}
           data={table.tableHead}
           style={styles.head}
-          flexArr={[2, 2, 3, 1]}
+          flexArr={table.tableHead.length == 4 ? [2, 2, 3, 1] : [2, 2, 3]}
         />
         {table.tableData.map((item: any, index: number) => (
           <Row
             key={index}
             data={item}
-            flexArr={[2, 2, 3, 1]}
-            style={[
-              styles.row,
-              // eslint-disable-next-line react-native/no-inline-styles
-              {backgroundColor: index % 2 === 0 ? '#E5ECF6' : ''},
-            ]}
+            flexArr={table.tableHead.length == 4 ? [2, 2, 3, 1] : [2, 2, 3]}
+            style={{
+              ...styles.row,
+              backgroundColor: index % 2 === 0 ? '#E5ECF6' : 'transparent',
+            }}
           />
         ))}
         <Skeleton
@@ -172,7 +175,6 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     fontSize: 10,
   },
-  tableHeader: {},
   coinContainer: {
     display: 'flex',
     flexDirection: 'row',

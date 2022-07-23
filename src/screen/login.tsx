@@ -19,6 +19,7 @@ import {userContext} from '../utils/context';
 import {$$userLogin} from '../utils/api';
 import Header from '../shared-components/header';
 import {addThousandSep} from '../utils/functions';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // @ts-ignore
 const Login = ({navigation}) => {
@@ -47,10 +48,14 @@ const Login = ({navigation}) => {
     }
     setLoading(true);
     await $$userLogin(email, password)
-      .then(response => {
+      .then(async response => {
         setUser({...response.data.user, loggedIn: true});
         setLoading(false);
         navigation.navigate('Main');
+        await AsyncStorage.setItem(
+          'userData',
+          JSON.stringify({...response.data.user, loggedIn: true}),
+        );
       })
       .catch(reason => {
         setLoading(false);

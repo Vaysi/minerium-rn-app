@@ -42,3 +42,27 @@ export interface EarningBalance {
   total: number;
   yesterday: number;
 }
+
+export interface WorkersList {
+  bestshare: number;
+  group_id: number;
+  hash1d: number;
+  hash1hr: number;
+  hash1m: number;
+  hash5m: number;
+  hash7d: number;
+  lastupdate: number;
+  shares: number;
+  uid: number;
+  worker_id: number;
+  worker_name: string;
+}
+
+export interface WorkerGroups {
+  coin: string | null;
+  createdAt: string;
+  id: number;
+  name: string;
+  updatedAt: string;
+  userId: number;
+}

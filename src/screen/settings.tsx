@@ -60,9 +60,9 @@ const Settings = (props: any) => {
             }}>
             <Text style={styles.buttonText}>Payment Settings</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button}>
+          {/* <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>Notification Settings</Text>
-          </TouchableOpacity>
+          </TouchableOpacity>*/}
           <TouchableOpacity
             style={styles.button}
             onPress={async () => {
@@ -72,7 +72,7 @@ const Settings = (props: any) => {
             }}>
             <Text style={styles.buttonText}>Logout</Text>
           </TouchableOpacity>
-          <TouchableOpacity
+          {/*<TouchableOpacity
             style={styles.button}
             onPress={() => setShowHelp(!showHelp)}>
             <View style={styles.toggleBar}>
@@ -110,16 +110,16 @@ const Settings = (props: any) => {
                 </Animated.View>
               )}
             </View>
-          </TouchableOpacity>
+          </TouchableOpacity>*/}
         </View>
-        <View style={styles.subContainer}>
+        {/*<View style={styles.subContainer}>
           <TouchableOpacity style={styles.secondButton}>
             <Text style={styles.secondButtonText}>Contact Us</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.secondButton}>
             <Text style={styles.secondButtonText}>About Us</Text>
           </TouchableOpacity>
-        </View>
+        </View>*/}
       </ScrollView>
     </SafeAreaView>
   );
