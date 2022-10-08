@@ -53,3 +53,7 @@ export const dynamicSort = (property: any) => {
 export const Hashrate = (hash: number) => {
   return hash > 1000 ? `${hash} PH/s` : `${hash} TH/s`;
 };
+
+export function sumUp(string: string, length: number) {
+  return string.substring(0, length) + ' ...';
+}

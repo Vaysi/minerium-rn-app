@@ -44,6 +44,7 @@ export interface EarningBalance {
 }
 
 export interface WorkersList {
+  rates: any;
   bestshare: number;
   group_id: number;
   hash1d: number;

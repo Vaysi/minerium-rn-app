@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
-import {FAB, Icon, Skeleton} from '@rneui/base';
+import {FAB, Icon, Input, Skeleton} from '@rneui/base';
 import Header from '../shared-components/header';
 import gStyles from '../utils/gStyles';
 import {userContext} from '../utils/context';
@@ -21,6 +21,26 @@ import {$$workersGroups, $$workersList} from '../utils/api';
 import {dynamicSort, Hashrate} from '../utils/functions';
 import {WorkerGroups, WorkersList} from '../utils/interfaces';
 import SelectDropdown from 'react-native-select-dropdown';
+import {LineChart} from 'react-native-chart-kit';
+import moment from 'moment/moment';
+
+function* colorize() {
+  let colors = [
+    'rgba(244, 67, 54, 1)',
+    'rgba(139, 195, 74, 1)',
+    'rgba(255, 152, 0, 1)',
+    'rgba(103, 58, 183, 1)',
+    'rgba(0, 188, 212, 1)',
+  ];
+  let index = 0;
+  while (true) {
+    if (index >= colors.length) {
+      index = 0;
+    }
+    yield colors[index];
+    index++;
+  }
+}
 
 const textCell = (title: string, subtitle?: string, color?: string | null) => (
   <View style={{display: 'flex', marginLeft: 2}}>
@@ -49,6 +69,7 @@ const textCell = (title: string, subtitle?: string, color?: string | null) => (
 );
 const Workers = () => {
   const isDarkMode = useColorScheme() === 'dark';
+  const newColor = colorize();
 
   const {user} = useContext(userContext);
 
@@ -88,6 +109,7 @@ const Workers = () => {
   const [groups, setGroups] = useState<Array<WorkerGroups>>([]);
   const [selected, setSelected] = useState('all');
   const [sortVal, setSortVal] = useState('sort');
+  const [chartData, setChartData] = useState({timestamps: [], workers: []});
   const sortOptions = [
     {
       title: 'User: Ascending',
@@ -135,6 +157,12 @@ const Workers = () => {
     });
   }, []);
 
+  const labels = chartData.timestamps
+    .slice(chartData.timestamps.length - 8, chartData.timestamps.length)
+    .map(item => {
+      return moment(item, 'YYYYMMDDhh').format('hh:mm');
+    });
+
   useEffect(() => {
     let newRows: any = [];
     rows.map(item => {
@@ -166,6 +194,7 @@ const Workers = () => {
       setRealRows([...newRows]);
       setRefreshing(false);
       setPage(0);
+      setChartData({...response.data.graph});
     });
   };
 
@@ -223,6 +252,17 @@ const Workers = () => {
 
   useEffect(() => {
     setStatus({...status, ...workersStatus(rows)});
+    let newRows = rows.map(item => {
+      let findRates = chartData.workers.filter(
+        (subItem: any) => item.worker_name === subItem.name,
+      );
+      if (findRates.length) {
+        // @ts-ignore
+        item.rates = findRates[0].rates;
+      }
+      return item;
+    });
+    setRows([...newRows]);
   }, [realRows]);
 
   useEffect(() => {
@@ -296,11 +336,20 @@ const Workers = () => {
           sortModel = 'atz';
           break;
       }
-      console.log(selectedColumn, sortModel, sortVal);
       // @ts-ignore
       setRows([...realRows.sort(preSort(selectedColumn, sortModel))]);
     }
   }, [sortVal]);
+
+  const [term, setTerm] = useState('');
+
+  useEffect(() => {
+    if (term.trim().length) {
+      setRows([...realRows].filter(item => item.worker_name.includes(term)));
+    } else {
+      setRows([...realRows]);
+    }
+  }, [term]);
 
   return (
     <SafeAreaView style={[backgroundStyle, {flex: 1}]}>
@@ -323,6 +372,23 @@ const Workers = () => {
           }
         />
         <View style={styles.container}>
+          <View style={styles.search}>
+            <Input
+              leftIcon={<Icon name="search" size={24} color="black" />}
+              inputContainerStyle={styles.searchInput}
+              leftIconContainerStyle={{paddingLeft: 10}}
+              rightIconContainerStyle={{paddingRight: 10}}
+              onChangeText={text => setTerm(text)}
+              value={term}
+              rightIcon={
+                term.trim().length > 0 ? (
+                  <TouchableOpacity onPress={() => setTerm('')}>
+                    <Icon name={'clear'} size={24} color={'black'} />
+                  </TouchableOpacity>
+                ) : undefined
+              }
+            />
+          </View>
           <View style={styles.filters}>
             <View>
               <SelectDropdown
@@ -519,7 +585,7 @@ const Workers = () => {
                   flexArr={[2.2, 2, 2, 2]}
                 />
                 {table.tableData
-                  .slice(page * 5, page * 5 + 5)
+                  .slice(page * 4, page * 4 + 4)
                   .map((item: any, index: number) => (
                     <Row
                       key={index}
@@ -544,12 +610,70 @@ const Workers = () => {
               height={table.tableData.length < 1 ? 130 : 0}
             />
           </Table>
+          <View style={styles.chart}>
+            {rows.length && rows[0].rates ? (
+              <LineChart
+                data={{
+                  legend: rows.length
+                    ? rows.slice(page * 4, page * 4 + 4).map(item => {
+                        return item.worker_name.split('.')[1];
+                      })
+                    : ['No Device'],
+                  labels: labels,
+                  datasets: rows.length
+                    ? rows.slice(page * 4, page * 4 + 4).map(item => {
+                        let myColor = newColor.next().value;
+                        return {
+                          data: item.rates
+                            ? item.rates.slice(
+                                item.rates.length - 8,
+                                item.rates.length,
+                              )
+                            : [1, 2, 3, 4, 5, 6, 7, 8],
+                          key: item.worker_id,
+                          color: () => myColor,
+                        };
+                      })
+                    : [{data: [1, 2, 3, 4, 5, 6, 7, 8], key: 0}],
+                }}
+                width={Dimensions.get('window').width} // from react-native
+                height={220}
+                yAxisSuffix=" TH/s"
+                chartConfig={{
+                  backgroundColor: '#043386',
+                  backgroundGradientFrom: '#043386',
+                  backgroundGradientTo: '#04338636',
+                  decimalPlaces: 0, // optional, defaults to 2dp
+                  color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                  labelColor: (opacity = 1) =>
+                    `rgba(255, 255, 255, ${opacity})`,
+                  style: {},
+                  propsForDots: {
+                    r: '6',
+                    strokeWidth: '1',
+                  },
+                }}
+                withShadow={false}
+                bezier
+                style={{
+                  marginVertical: 8,
+                }}
+              />
+            ) : (
+              <Skeleton
+                animation="pulse"
+                width={Dimensions.get('window').width}
+                height={150}
+                style={{marginTop: 5}}
+              />
+            )}
+          </View>
         </View>
       </ScrollView>
       <FAB
         placement={'right'}
-        visible={page * 5 + 5 !== rows.length}
-        disabled={page * 5 + 5 === rows.length}
+        visible={page * 4 + 4 < rows.length}
+        disabled={page * 4 + 4 > rows.length}
         icon={{name: 'chevron-right', color: 'white'}}
         size="small"
         color={gStyles.colors.primary}
@@ -599,9 +723,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 13,
   },
-  tableHeader: {
-    textAlign: 'center',
-  },
+  tableHeader: {},
   statusFilter: {
     display: 'flex',
     flexDirection: 'row',
@@ -708,6 +830,21 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     display: 'flex',
     flexDirection: 'row',
+  },
+  search: {
+    justifyContent: 'center',
+    flexDirection: 'row',
+    display: 'flex',
+  },
+  searchInput: {
+    backgroundColor: '#DAE5F5',
+    borderRadius: 5,
+    borderColor: '#04338621',
+    marginBottom: -10,
+    flex: 1,
+  },
+  chart: {
+    marginBottom: 15,
   },
 });
 

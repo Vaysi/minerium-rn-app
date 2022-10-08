@@ -60,9 +60,13 @@ const Settings = (props: any) => {
             }}>
             <Text style={styles.buttonText}>Payment Settings</Text>
           </TouchableOpacity>
-          {/* <TouchableOpacity style={styles.button}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              props.navigation.navigate('NotificationSettings');
+            }}>
             <Text style={styles.buttonText}>Notification Settings</Text>
-          </TouchableOpacity>*/}
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.button}
             onPress={async () => {
@@ -72,7 +76,7 @@ const Settings = (props: any) => {
             }}>
             <Text style={styles.buttonText}>Logout</Text>
           </TouchableOpacity>
-          {/*<TouchableOpacity
+          <TouchableOpacity
             style={styles.button}
             onPress={() => setShowHelp(!showHelp)}>
             <View style={styles.toggleBar}>
@@ -99,10 +103,18 @@ const Settings = (props: any) => {
                     opacity: fadeAnim,
                     paddingRight: 15,
                   }}>
-                  <TouchableOpacity style={{marginTop: 10}}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      props.navigation.navigate('FAQ');
+                    }}
+                    style={{marginTop: 10}}>
                     <Text style={[styles.buttonText, {flex: 1}]}>FAQ</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={{marginTop: 10}}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      props.navigation.navigate('HowMine');
+                    }}
+                    style={{marginTop: 10}}>
                     <Text style={[styles.buttonText, {flex: 1}]}>
                       How do i mine?
                     </Text>
@@ -110,16 +122,17 @@ const Settings = (props: any) => {
                 </Animated.View>
               )}
             </View>
-          </TouchableOpacity>*/}
-        </View>
-        {/*<View style={styles.subContainer}>
-          <TouchableOpacity style={styles.secondButton}>
-            <Text style={styles.secondButtonText}>Contact Us</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.secondButton}>
+        </View>
+        <View style={styles.subContainer}>
+          <TouchableOpacity
+            onPress={() => {
+              props.navigation.navigate('AboutUs');
+            }}
+            style={styles.secondButton}>
             <Text style={styles.secondButtonText}>About Us</Text>
           </TouchableOpacity>
-        </View>*/}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

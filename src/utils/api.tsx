@@ -202,7 +202,7 @@ const $$userRegister = (
     });
 };
 
-const $$earningsBalance = (token: string) => {
+const $$earningsBalance = (token: any) => {
   return instance
     .request({
       method: routes.earnings.balance.method as Method,
@@ -215,11 +215,12 @@ const $$earningsBalance = (token: string) => {
     });
 };
 
-const $$earningsHistory = () => {
+const $$earningsHistory = (token: any) => {
   return instance
     .request({
       method: routes.earnings.history.method as Method,
       url: routes.earnings.history.route,
+      headers: {Authorization: `Bearer ${token}`},
     })
     .then(response => response.data)
     .catch(error => {
@@ -227,11 +228,12 @@ const $$earningsHistory = () => {
     });
 };
 
-const $$paymentHistory = () => {
+const $$paymentHistory = (token: any) => {
   return instance
     .request({
       method: routes.earnings.paymentHistory.method as Method,
       url: routes.earnings.paymentHistory.route,
+      headers: {Authorization: `Bearer ${token}`},
       params: {
         coin: 'all',
       },
@@ -399,11 +401,12 @@ const $$setCap = (coin: string, priceCap: number, wallet: string) => {
     });
 };
 
-const $$getNotifications = () => {
+const $$getNotifications = (token: any) => {
   return instance
     .request({
       method: routes.users.notifications.method as Method,
       url: routes.users.notifications.route,
+      headers: {Authorization: `Bearer ${token}`},
     })
     .then(response => response.data)
     .catch(error => {
@@ -444,18 +447,20 @@ const $$setNotifications = (
   dailyReport: boolean,
   hashrate: any,
   totalHashrate: any,
+  token: any,
 ) => {
   let data = {
-    activeWorkers: parseInt(activeWorkers),
+    activeWorkers: activeWorkers ? parseInt(activeWorkers, 10) : null,
     dailyReport,
-    hashrate: parseInt(hashrate),
-    totalHashrate: parseInt(totalHashrate),
+    hashrate: hashrate ? parseInt(hashrate, 10) : null,
+    totalHashrate: totalHashrate ? parseInt(totalHashrate, 10) : null,
   };
   return instance
     .request({
       method: routes.users.setNotifications.method as Method,
       url: routes.users.setNotifications.route,
       data,
+      headers: {Authorization: `Bearer ${token}`},
     })
     .then(response => response.data)
     .catch(error => {

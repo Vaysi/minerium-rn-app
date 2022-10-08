@@ -63,9 +63,12 @@ const textCell = (title: string, subtitle?: string) => (
     )}
   </View>
 );
+
 interface Props {
   setSelectedCoinData?: any;
+  justApiResult?: boolean;
 }
+
 const Statistics = (props: Props) => {
   const [table, setTable] = useState({
     tableHead: [
@@ -116,7 +119,9 @@ const Statistics = (props: Props) => {
     newTable.tableData = rows;
     setTable(newTable);
   }, [coins]);
-  return (
+  return props.justApiResult ? (
+    <></>
+  ) : (
     <View style={styles.tableContainer}>
       <Text style={styles.title}>Statistics</Text>
       <Table>
@@ -124,17 +129,17 @@ const Statistics = (props: Props) => {
           key={moment.now().toString()}
           data={table.tableHead}
           style={styles.head}
-          flexArr={table.tableHead.length == 4 ? [2, 2, 3, 1] : [2, 2, 3]}
+          flexArr={table.tableHead.length === 4 ? [2, 2, 3, 1] : [2, 2, 3]}
         />
         {table.tableData.map((item: any, index: number) => (
           <Row
             key={index}
             data={item}
-            flexArr={table.tableHead.length == 4 ? [2, 2, 3, 1] : [2, 2, 3]}
-            style={{
-              ...styles.row,
-              backgroundColor: index % 2 === 0 ? '#E5ECF6' : 'transparent',
-            }}
+            flexArr={table.tableHead.length === 4 ? [2, 2, 3, 1] : [2, 2, 3]}
+            style={[
+              styles.row,
+              {backgroundColor: index % 2 === 0 ? '#E5ECF6' : 'transparent'},
+            ]}
           />
         ))}
         <Skeleton

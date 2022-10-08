@@ -3,7 +3,6 @@ import React, {useEffect, useState} from 'react';
 import {
   getFocusedRouteNameFromRoute,
   NavigationContainer,
-  useRoute,
 } from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Login from './src/screen/login';
@@ -26,6 +25,12 @@ import Deposit from './src/screen/settings/deposit';
 import Withdraw from './src/screen/settings/withdraw';
 import Workers from './src/screen/workers';
 import {navigationRef} from './RootNavigation';
+import Earnings from './src/screen/earnings';
+import Instabug, {BugReporting, Replies} from 'instabug-reactnative';
+import Notifications from './src/screen/settings/notifications';
+import Faq from './src/screen/settings/faq';
+import HowDoIMine from './src/screen/settings/howMine';
+import AboutUs from './src/screen/settings/about';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -48,7 +53,7 @@ const HomeTabs = (props: any) => {
       <Tab.Screen
         options={{
           title: 'Minerium',
-          tabBarIcon: ({color, size}) => (
+          tabBarIcon: () => (
             <Icon
               name={routeName === 'Home' ? 'home-filled' : 'home'}
               type={'MaterialIcons'}
@@ -64,7 +69,7 @@ const HomeTabs = (props: any) => {
       <Tab.Screen
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({color, size}) => (
+          tabBarIcon: () => (
             <Icon
               name={'show-chart'}
               type={'MaterialIcons'}
@@ -80,7 +85,7 @@ const HomeTabs = (props: any) => {
       <Tab.Screen
         options={{
           title: 'Workers',
-          tabBarIcon: ({color, size}) => (
+          tabBarIcon: () => (
             <Icon
               name={'insert-chart'}
               type={'MaterialIcons'}
@@ -96,7 +101,7 @@ const HomeTabs = (props: any) => {
       <Tab.Screen
         options={{
           title: 'Calculator',
-          tabBarIcon: ({color, size}) => (
+          tabBarIcon: () => (
             <Icon
               name={'calculate'}
               type={'MaterialIcons'}
@@ -111,8 +116,24 @@ const HomeTabs = (props: any) => {
       />
       <Tab.Screen
         options={{
+          title: 'Earnings',
+          tabBarIcon: () => (
+            <Icon
+              name={'account-balance-wallet'}
+              type={'MaterialIcons'}
+              size={30}
+              style={styles.tabsIcon}
+              color={'#E5ECF6'}
+            />
+          ),
+        }}
+        name={'Earnings'}
+        component={Earnings}
+      />
+      <Tab.Screen
+        options={{
           title: 'Settings',
-          tabBarIcon: ({color, size}) => (
+          tabBarIcon: () => (
             <Icon
               name={'settings'}
               type={'MaterialIcons'}
@@ -149,10 +170,42 @@ const HomeTabs = (props: any) => {
         name="Withdraw"
         component={Withdraw}
       />
+      <Tab.Screen
+        options={{
+          title: 'Notifications',
+          tabBarButton: () => <></>,
+        }}
+        name="NotificationSettings"
+        component={Notifications}
+      />
+      <Tab.Screen
+        options={{
+          title: 'FAQ',
+          tabBarButton: () => <></>,
+        }}
+        name="FAQ"
+        component={Faq}
+      />
+      <Tab.Screen
+        options={{
+          title: 'How Do i Mine?',
+          tabBarButton: () => <></>,
+        }}
+        name="HowMine"
+        component={HowDoIMine}
+      />
+      <Tab.Screen
+        options={{
+          title: 'About Us',
+          tabBarButton: () => <></>,
+        }}
+        name="AboutUs"
+        component={AboutUs}
+      />
     </Tab.Navigator>
   );
 };
-const App = (props: any) => {
+const App = () => {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
@@ -177,6 +230,12 @@ const App = (props: any) => {
         setUser(cachedUser);
       }
     })();
+    Instabug.start('d2fbbf8bdeafb0f29a432018dbaef63d', [
+      Instabug.invocationEvent.shake,
+      Instabug.invocationEvent.screenshot,
+    ]);
+    BugReporting.setReportTypes([BugReporting.reportType.bug]);
+    Replies.setEnabled(false);
   }, []);
 
   return (
